@@ -153,6 +153,15 @@ describe('Test Request Response', function () {
     await waitResponse(req, res)
     assert.strictEqual(req.userId, userId)
     assert.strictEqual(req.permissionId, permissionId)
+    const req2 = createRequest({
+      method: 'GET',
+      url: '/books/1/authors/2',
+      params: { bookId: 1, authorId: 2 },
+    })
+    const res2 = createResponseOf(req2)
+    await waitResponse(req2, res2)
+    assert.strictEqual(req2.userId, userId)
+    assert.strictEqual(req2.permissionId, permissionId)
   })
   it('HEAD /books/:bookId', async function () {
     const req = createRequest({

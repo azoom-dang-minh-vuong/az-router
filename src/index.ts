@@ -8,13 +8,8 @@ import chalk from 'chalk'
 const isWindows = process.platform === 'win32'
 const isFunction = (func: any) => typeof func === 'function'
 const globP = util.promisify(glob)
-const generateSpace = (length: number) => {
-  let s = ''
-  for (let i = 0; i < length; i++) s += ' '
-  return s
-}
 const reqmethods = [
-  'middleware',
+  'middleware', // always place `middleware` on top
   'head',
   'connnect',
   'options',
@@ -103,6 +98,14 @@ function azRouter(options: Options = {}) {
       }, {} as Record<string, [string, string]>)
 
       const sortedPaths = Object.entries(pathObj).sort((a, b) => {
+        // Place middleware on top
+        if (a[1][1].startsWith(b[1][1]) && b[1][0] === reqmethods[0]) {
+          return 1
+        }
+        if (b[1][1].startsWith(a[1][1]) && a[1][0] === reqmethods[0]) {
+          return -1
+        }
+
         // Descending sort for exception handling at dynamic routes
         if (a[1][1] !== b[1][1]) return a[1][1] < b[1][1] ? 1 : -1
         // Orderring by index in reqmethods
@@ -123,7 +126,7 @@ function azRouter(options: Options = {}) {
       for (let i = 0; i < sortedPaths.length; i++) {
         const [methodName, routePath] = sortedPaths[i][1]
         const msg = msgs[i]
-        debug(debugPrefix + msg + generateSpace(maxLength - msg.length))
+        debug(debugPrefix + msg + ' '.repeat(maxLength - msg.length))
         const module = modules[i]
         const handlers: RequestHandler[] = []
         if (methodName === reqmethods[0]) {
