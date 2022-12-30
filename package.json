@@ -17,7 +17,7 @@
     "build": "yarn build:cjs && yarn build:esm",
     "build:cjs": "tsc",
     "build:esm": "tsc -p tsconfig-esm.json && renamer --find '/\\.js$/' --replace '.mjs' 'dist/esm/**/*.js'",
-    "test": "ts-node-esm node_modules/.bin/mocha tests/**/*.test.ts"
+    "test": "ts-node-esm node_modules/mocha/bin/mocha tests/**/*.test.ts"
   },
   "dependencies": {
     "chalk": "^4.0.0",

@@ -5,7 +5,6 @@ import glob from 'glob'
 import express from 'express'
 import chalk from 'chalk'
 
-const isWindows = process.platform === 'win32'
 const isFunction = (func: any) => typeof func === 'function'
 const globP = util.promisify(glob)
 const reqmethods = [
@@ -111,9 +110,7 @@ function azRouter(options: Options = {}) {
         // Orderring by index in reqmethods
         return reqmethods.indexOf(a[1][0]) - reqmethods.indexOf(b[1][0])
       })
-      const modules = await Promise.all(
-        sortedPaths.map(([filePath]) => import((isWindows ? 'file://' : '') + filePath))
-      )
+      const modules = await Promise.all(sortedPaths.map(([filePath]) => import(filePath)))
 
       const msgs = sortedPaths.map((item) => {
         const [methodName, routePath] = item[1]
