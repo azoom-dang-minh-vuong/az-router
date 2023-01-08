@@ -127,11 +127,11 @@ function azRouter(options: Options = {}) {
         const module = modules[i]
         const handlers: RequestHandler[] = []
         if (methodName === reqmethods[0]) {
+          // Applying middleware
           if (typeof module === 'object') {
-            handlers.push(
-              ...Object.values(module as Record<string, RequestHandler>).filter(isFunction)
-            )
+            handlers.push(...Object.values(module as Record<string, RequestHandler>).flat())
           } else if (isFunction(module)) {
+            // In CommonJS, the `module` can be a function
             handlers.push(module)
           }
           if (handlers.length) {
@@ -141,8 +141,10 @@ function azRouter(options: Options = {}) {
             debug(`   ${chalk.yellow(chalk.bold('⇒ No handling function'))}\n`)
           }
         } else {
-          if (Array.isArray(module.middleware)) {
-            handlers.push(...module.middleware.filter(isFunction))
+          if (typeof module.middleware === 'object') {
+            handlers.push(
+              ...Object.values(module.middleware as Record<string, RequestHandler>).flat()
+            )
           } else if (isFunction(module.middleware)) {
             handlers.push(module.middleware)
           }

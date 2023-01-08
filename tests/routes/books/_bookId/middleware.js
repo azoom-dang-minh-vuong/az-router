@@ -1,11 +1,14 @@
 import { userId, permissionId } from '../../../data.mocks'
 
-export const middlewareUser = (req, res, next) => {
+const middlewareUser = (req, res, next) => {
   req.userId = userId
   next()
 }
 
-export const middlewarePermission = (req, res, next) => {
+const middlewarePermission = (req, res, next) => {
+  if (req.userId !== userId) return res.sendStatus(401)
   req.permissionId = permissionId
   next()
 }
+
+export { middlewareUser as middleware01, middlewarePermission as middleware02 }
