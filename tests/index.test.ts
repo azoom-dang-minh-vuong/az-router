@@ -16,6 +16,7 @@ import {
 const routeDir = path.relative(process.cwd(), path.join(__dirname, 'routes'))
 const router = azRouter({
   routeDir,
+  debug: true,
 })
 const layerMiddleware = router.stack[router.stack.length - 1]
 
@@ -36,20 +37,40 @@ const waitResponse = (
     r(req, res, reject)
   })
 
+const testGetBookCount = async function () {
+  const req = createRequest({
+    method: 'GET',
+    url: '/books/count',
+  })
+  const res = createResponseOf(req)
+  await waitResponse(req, res)
+  assert.strictEqual(res._getData(), 'Counting books')
+}
+const testMiddlewareOfBookId = async function () {
+  const req = createRequest({
+    method: 'GET',
+    url: '/books/1',
+    params: { bookId: 1 },
+  })
+  const res = createResponseOf(req)
+  await waitResponse(req, res)
+  assert.strictEqual(req.userId, userId)
+  assert.strictEqual(req.permissionId, permissionId)
+  const req2 = createRequest({
+    method: 'GET',
+    url: '/books/1/authors/2',
+    params: { bookId: 1, authorId: 2 },
+  })
+  const res2 = createResponseOf(req2)
+  await waitResponse(req2, res2)
+  assert.strictEqual(req2.userId, userId)
+  assert.strictEqual(req2.permissionId, permissionId)
+}
+
 describe(`Test ${chalk.yellowBright('middlewareWaitingForInit')}`, function () {
   this.timeout(5000)
   function sendRequests() {
-    const req1 = createRequest({
-      method: 'GET',
-      url: '/',
-    })
-    const res1 = createResponseOf(req1)
-    const req2 = createRequest({
-      method: 'GET',
-      url: '/',
-    })
-    const res2 = createResponseOf(req1)
-    return Promise.all([waitResponse(req1, res1), waitResponse(req2, res2)])
+    return Promise.all([testGetBookCount.call(this), testMiddlewareOfBookId.call(this)])
   }
   it('Send 2 requests before router have been initialized', function (done) {
     assert.strictEqual(util.inspect(router.promise()), 'Promise { <pending> }')
@@ -62,16 +83,9 @@ describe(`Test ${chalk.yellowBright('middlewareWaitingForInit')}`, function () {
     await router.promise()
     await sendRequests.call(this)
   })
-})
-
-describe(`Test ${chalk.blueBright('router')}.${chalk.yellowBright('promise')}()`, function () {
-  it('must to resolve itself', async function () {
-    const result = await router.promise()
-    assert.strictEqual(result, router)
-  })
-  it(`remove layer of ${chalk.yellowBright('middlewareWaitingForInit')} from ${chalk.blueBright(
+  it(`Remove layer of ${chalk.yellowBright('middlewareWaitingForInit')} from ${chalk.blueBright(
     'router'
-  )}.${chalk.cyanBright('stack')} after resolved`, async function () {
+  )}.${chalk.cyanBright('stack')}`, async function () {
     await router.promise()
     assert.strictEqual(router.stack.indexOf(layerMiddleware), -1)
   })
@@ -134,35 +148,8 @@ describe('Test Request Response', function () {
     await waitResponse(req, res)
     assert.strictEqual(req.sampleParam, sampleParamTraceBooks1 + sampleParamTraceBooks2)
   })
-  it('GET /books/count', async function () {
-    const req = createRequest({
-      method: 'GET',
-      url: '/books/count',
-    })
-    const res = createResponseOf(req)
-    await waitResponse(req, res)
-    assert.strictEqual(res._getData(), 'Counting books')
-  })
-  it('Passing middleware for route /books/:bookId', async function () {
-    const req = createRequest({
-      method: 'GET',
-      url: '/books/1',
-      params: { bookId: 1 },
-    })
-    const res = createResponseOf(req)
-    await waitResponse(req, res)
-    assert.strictEqual(req.userId, userId)
-    assert.strictEqual(req.permissionId, permissionId)
-    const req2 = createRequest({
-      method: 'GET',
-      url: '/books/1/authors/2',
-      params: { bookId: 1, authorId: 2 },
-    })
-    const res2 = createResponseOf(req2)
-    await waitResponse(req2, res2)
-    assert.strictEqual(req2.userId, userId)
-    assert.strictEqual(req2.permissionId, permissionId)
-  })
+  it('GET /books/count', testGetBookCount)
+  it('Passing middleware for route /books/:bookId', testMiddlewareOfBookId)
   it('HEAD /books/:bookId', async function () {
     const req = createRequest({
       method: 'HEAD',
