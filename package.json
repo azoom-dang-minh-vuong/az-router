@@ -4,7 +4,7 @@
   "author": "Azoom Vietnam",
   "license": "MIT",
   "main": "dist/cjs/index.js",
-  "types": "dist/index.d.ts",
+  "types": "dist/declaration/index.d.ts",
   "exports": {
     "node": {
       "import": "./dist/esm/index.mjs",
@@ -17,7 +17,7 @@
     "build": "yarn build:cjs && yarn build:esm",
     "build:cjs": "tsc",
     "build:esm": "tsc -p tsconfig-esm.json && renamer --find '/\\.js$/' --replace '.mjs' 'dist/esm/**/*.js'",
-    "test": "ts-node-esm node_modules/mocha/bin/mocha tests/**/*.test.ts"
+    "test": "ts-node-esm node_modules/mocha/bin/mocha $(find tests -name '*.test.ts')"
   },
   "dependencies": {
     "chalk": "^4.0.0",

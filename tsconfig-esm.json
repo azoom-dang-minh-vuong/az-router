@@ -4,7 +4,7 @@
     "module": "ES2020",
     "outDir": "dist/esm",
     "declaration": true,
-    "declarationDir": "dist"
+    "declarationDir": "dist/declaration"
   },
   "exclude": ["tests/*", "dist/*"]
 }
